@@ -1,0 +1,10 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Bogus.Extensions;
+global using FakeItEasy;
+global using FakeItEasy.AutoFakeIt;
+global using FluentAssertions;
+global using NUnit.Framework;
+global using IMessage = Porter.Models.IMessage<string>;
