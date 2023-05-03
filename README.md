@@ -9,7 +9,7 @@
 ![](https://raw.githubusercontent.com/lucasteles/Porter/badges/lines_badge.svg)
 
 
-Simple to use Pub/Sub library to glue AWS messaging services SNS,SQS,EventBridge together
+Simple to use Pub/Sub library to glue AWS messaging services SNS, SQS, EventBridge together.
 
 
 ## Installation
@@ -26,5 +26,3 @@ $ dotnet add package Porter.Aws
 ```ps
 $ dotnet add package Porter.Testing
 ```
-
-
