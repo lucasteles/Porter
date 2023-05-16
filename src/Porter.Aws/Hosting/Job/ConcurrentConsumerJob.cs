@@ -71,6 +71,12 @@ sealed class ConcurrentConsumerJob : IConsumerJob
 
                 await Task.WhenAll(tasks);
             }
+            catch (TaskCanceledException ex)
+            {
+                logger.LogWarning(ex,
+                    "Subdivisions: Polling Worker Cancelled ({DescriberTopicName})",
+                    describer.TopicName);
+            }
             catch (Exception ex)
             {
                 logger.LogCritical(ex,
