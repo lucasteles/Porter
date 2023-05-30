@@ -52,7 +52,7 @@ class ConsumerFactory : IConsumerFactory
         );
 
         var header =
-            $"{describer.TopicName}[{message.CorrelationId?.ToString() ?? "EMPTY-CORRELATION-ID"}.{message.MessageId}]";
+            $"{describer.TopicName}[{message.CorrelationId?.ToString() ?? "NO-CORRELATION-ID"}.{message.MessageId}({message.RetryNumber})]";
 
         logger.LogInformation("-> {Header}: Consuming {Location} [published at {MessageDate}]",
             header,
@@ -98,7 +98,8 @@ class ConsumerFactory : IConsumerFactory
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "[ERROR]{Header}: Failure consuming message", header);
+            logger.LogError(ex, "[ERROR]{Header}: Failure consuming message with: {Error}",
+                header, ex.Message);
             diagnostics.RecordException(activity, ex, header);
             diagnostics.AddFailedMessagesCounter(1, describer.TopicName, stopwatch.Elapsed);
             var retryStrategy = scope.ServiceProvider.GetRequiredService<IRetryStrategy>();
@@ -106,11 +107,12 @@ class ConsumerFactory : IConsumerFactory
             logger.LogInformation("[RELEASING]{Header}: message in {Span}", header, delay);
             await message.Release(delay);
 
-            if (describer.ErrorHandler is not null)
-            {
-                logger.LogInformation("[ERROR]{Header}: Calling custom error handler", header);
-                await describer.ErrorHandler(ex);
-            }
+            if (describer.ErrorListener is not null)
+                await describer.ErrorListener(ex);
+
+            foreach (var listener in scope.ServiceProvider
+                         .GetRequiredService<IEnumerable<IPorterErrorListener>>())
+                await listener.OnError(ex);
 
             if (config.Value.RaiseExceptions)
                 throw;

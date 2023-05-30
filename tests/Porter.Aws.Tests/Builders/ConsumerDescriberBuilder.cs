@@ -73,7 +73,7 @@ class ConsumerDescriberBuilder
         A.CallTo(() => value.MessageType).Returns(messageType);
         A.CallTo(() => value.MaxConcurrency).Returns(maxConcurrency);
         A.CallTo(() => value.PollingInterval).Returns(pollingInterval);
-        A.CallTo(() => value.ErrorHandler).Returns(errorHandler);
+        A.CallTo(() => value.ErrorListener).Returns(errorHandler);
         return value;
     }
 }

@@ -10,7 +10,7 @@ interface IConsumerDescriber
     TimeSpan ConsumeTimeout { get; }
     Type MessageType { get; }
     public Type ConsumerType { get; }
-    Func<Exception, Task>? ErrorHandler { get; }
+    Func<Exception, Task>? ErrorListener { get; }
     TopicNameOverride? NameOverride { get; set; }
 }
 
@@ -67,7 +67,7 @@ sealed class ConsumerDescriber : IConsumerDescriber
         TopicName = topicName;
         MessageType = messageType;
         ConsumerType = consumerType;
-        ErrorHandler = config.ErrorHandler;
+        ErrorListener = config.ErrorHandler;
         PollingInterval = config.PollingInterval;
         ConsumeTimeout = config.ConsumeTimeout;
         MaxConcurrency = config.MaxConcurrency;
@@ -81,5 +81,5 @@ sealed class ConsumerDescriber : IConsumerDescriber
     public int MaxConcurrency { get; }
     public TimeSpan ConsumeTimeout { get; }
     public TopicNameOverride? NameOverride { get; set; }
-    public Func<Exception, Task>? ErrorHandler { get; }
+    public Func<Exception, Task>? ErrorListener { get; }
 }
