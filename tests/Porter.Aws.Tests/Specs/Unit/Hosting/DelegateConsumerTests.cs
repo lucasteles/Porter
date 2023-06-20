@@ -13,13 +13,13 @@ public class DelegateConsumerTests : BaseTest
         var consumer = new DelegateConsumer<TestMessage>(handler, provider);
         var message = TestMessage.New();
         var meta = message.GetMeta();
-        var ctx = new CancellationToken();
+        var ct = new CancellationToken();
 
-        await consumer.Consume(message, meta, ctx);
+        await consumer.Consume(message, meta, ct);
 
         A.CallTo(() => mocker
                 .Resolve<IAsyncFakeService>()
-                .Work(message, ctx))
+                .Work(message, ct))
             .MustHaveHappened();
     }
 

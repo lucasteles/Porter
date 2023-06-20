@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -126,17 +127,28 @@ class ConsumerFactory : IConsumerFactory
     }
 }
 
+/// <inheritdoc />
+[Serializable]
 public class ConsumerIgnoreMessageException : Exception
 {
-    public ConsumerIgnoreMessageException(string message) : base(message)
-    {
-    }
+    /// <inheritdoc />
+    public ConsumerIgnoreMessageException(string message) : base(message) { }
+
+    /// <inheritdoc />
+    protected ConsumerIgnoreMessageException(SerializationInfo info, StreamingContext context)
+        : base(info, context) { }
 }
 
+/// <inheritdoc />
+[Serializable]
 public class ConsumerDelayMessageException : Exception
 {
     public TimeSpan Time { get; }
 
+    /// <inheritdoc />
     public ConsumerDelayMessageException(TimeSpan time) : base($"delaying message for {time}") =>
         Time = time;
+
+    /// <inheritdoc />
+    protected ConsumerDelayMessageException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }

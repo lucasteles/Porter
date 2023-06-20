@@ -132,5 +132,5 @@ public class LocalstackFixture : ServicesFixture
 
 class NoRetryStrategy : IRetryStrategy
 {
-    public TimeSpan Evaluate(uint retryNumber) => TimeSpan.Zero;
+    public TimeSpan Evaluate(int retryNumber) => TimeSpan.Zero;
 }

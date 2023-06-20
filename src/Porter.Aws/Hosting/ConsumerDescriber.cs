@@ -19,7 +19,7 @@ sealed class ConsumerConfig
     public int MaxConcurrency { get; set; }
     public TimeSpan ConsumeTimeout { get; set; }
     public TimeSpan PollingInterval { get; set; }
-    public Func<Exception, Task>? ErrorHandler { get; set; }
+    public Func<Exception, Task>? ErrorListener { get; set; }
     public TopicNameOverride? NameOverride { get; set; }
 }
 
@@ -35,7 +35,7 @@ sealed class ConsumerDescriber : IConsumerDescriber
         ArgumentNullException.ThrowIfNull(topicName);
         ArgumentNullException.ThrowIfNull(consumerType);
         ArgumentNullException.ThrowIfNull(messageType);
-        config ??= new ConsumerConfig();
+        config ??= new();
 
         if (!TopicId.IsValidTopicName(topicName))
             throw new PorterException($"Invalid topic names: {topicName}");
@@ -67,7 +67,7 @@ sealed class ConsumerDescriber : IConsumerDescriber
         TopicName = topicName;
         MessageType = messageType;
         ConsumerType = consumerType;
-        ErrorListener = config.ErrorHandler;
+        ErrorListener = config.ErrorListener;
         PollingInterval = config.PollingInterval;
         ConsumeTimeout = config.ConsumeTimeout;
         MaxConcurrency = config.MaxConcurrency;

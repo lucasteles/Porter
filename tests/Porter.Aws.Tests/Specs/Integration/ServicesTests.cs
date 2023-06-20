@@ -1,4 +1,3 @@
-using Porter;
 using Porter.Aws.Tests.TestUtils.Fixtures;
 using Porter.Models;
 using Porter.Services;

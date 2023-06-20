@@ -1,6 +1,5 @@
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
-using Porter;
 using Porter.Models;
 using Porter.Services;
 

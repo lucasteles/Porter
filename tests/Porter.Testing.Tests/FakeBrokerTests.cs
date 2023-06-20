@@ -1,7 +1,6 @@
 using AutoBogus;
 using Bogus;
 using Microsoft.Extensions.DependencyInjection;
-using Porter;
 using Porter.Testing;
 
 namespace Porter.Testing.Tests;

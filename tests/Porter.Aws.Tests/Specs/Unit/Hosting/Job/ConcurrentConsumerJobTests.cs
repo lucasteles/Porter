@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils.Fixtures;
 using Porter.Hosting;
@@ -18,10 +17,10 @@ public class ConcurrentConsumerJobTests : BaseTest
     {
         var consumer = new ConsumerDescriberBuilder().Generate();
         var message = new FakeMessageBuilder().Generate();
-        var ctx = new CancellationTokenSource();
+        var ct = new CancellationTokenSource();
 
         A.CallTo(() => mocker.Resolve<IOptionsMonitor<PorterConfig>>().CurrentValue)
-            .Returns(new PorterConfig
+            .Returns(new()
             {
                 MessageTimeoutInSeconds = 100,
                 PollingIntervalInSeconds = 0.1f,
@@ -40,13 +39,13 @@ public class ConcurrentConsumerJobTests : BaseTest
         A.CallTo(() => mocker.Resolve<IConsumerFactory>()
                 .ConsumeScoped(A<IConsumerDescriber>._, A<IMessage>._,
                     A<CancellationToken>._))
-            .Invokes(() => ctx.CancelAfter(100));
+            .Invokes(() => ct.CancelAfter(100));
 
         var job = mocker.Generate<ConcurrentConsumerJob>();
         var workerTask = () => job.Start(new[]
         {
             consumer,
-        }, ctx.Token);
+        }, ct.Token);
 
         await workerTask.Should().ThrowAsync<OperationCanceledException>();
 
@@ -93,17 +92,17 @@ public class ConcurrentConsumerJobTests : BaseTest
                     .ThrowIfCancellationRequested();
             });
 
-        var ctx = new CancellationTokenSource();
+        var ct = new CancellationTokenSource();
 
         A.CallTo(mocker.Resolve<ILogger<ConcurrentConsumerJob>>())
             .Where(x => x.Arguments.Get<LogLevel>("logLevel") == LogLevel.Critical)
-            .Invokes(() => ctx.Cancel());
+            .Invokes(() => ct.Cancel());
 
         var job = mocker.Generate<ConcurrentConsumerJob>();
         var task = () => job.Start(new[]
         {
             consumer,
-        }, ctx.Token);
+        }, ct.Token);
         await task.Should().ThrowAsync<OperationCanceledException>();
     }
 
@@ -133,20 +132,20 @@ public class ConcurrentConsumerJobTests : BaseTest
                     message2,
                 });
 
-        var ctx = new CancellationTokenSource();
+        var ct = new CancellationTokenSource();
         var semaphore = new SemaphoreSlim(1);
-        await semaphore.WaitAsync(ctx.Token);
+        await semaphore.WaitAsync(ct.Token);
         A.CallTo(() => mocker.Resolve<IConsumerFactory>()
                 .ConsumeScoped(A<IConsumerDescriber>._, A<IMessage>._,
                     A<CancellationToken>._))
-            .ReturnsLazily(() => semaphore.WaitAsync(ctx.Token));
+            .ReturnsLazily(() => semaphore.WaitAsync(ct.Token));
 
         var job = mocker.Generate<ConcurrentConsumerJob>();
         var workerTask = () => job.Start(new[]
         {
             consumer,
-        }, ctx.Token);
-        ctx.CancelAfter(500);
+        }, ct.Token);
+        ct.CancelAfter(500);
         await workerTask.Should().ThrowAsync<OperationCanceledException>();
 
         A.CallTo(() => mocker.Resolve<IConsumerFactory>()

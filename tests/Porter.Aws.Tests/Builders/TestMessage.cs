@@ -5,7 +5,6 @@ global using TestConsumer =
 global using FakeMessageConsumer = Porter.Aws.Tests.Builders.FakeMessageConsumer<string>;
 using System.Text.Json;
 using AutoBogus;
-using Porter;
 
 namespace Porter.Aws.Tests.Builders;
 

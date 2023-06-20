@@ -3,7 +3,6 @@ using AutoBogus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;

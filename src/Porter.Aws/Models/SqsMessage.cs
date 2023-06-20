@@ -12,7 +12,7 @@ public interface IMessage<out TBody> where TBody : notnull
     Guid? CorrelationId { get; }
     DateTime Datetime { get; }
     TBody Body { get; }
-    uint RetryNumber { get; }
+    int RetryNumber { get; }
     string QueueUrl { get; }
     string? TopicArn { get; }
     Task Delete();
@@ -32,7 +32,7 @@ readonly struct SqsMessage<TBody> : IMessage<TBody> where TBody : notnull
     public required DateTime Datetime { get; init; }
     public required Guid MessageId { get; init; }
     public required string QueueUrl { get; init; }
-    public uint RetryNumber { get; init; } = 0;
+    public int RetryNumber { get; init; } = 0;
     public Guid? CorrelationId { get; init; }
     public string? TopicArn { get; init; }
 

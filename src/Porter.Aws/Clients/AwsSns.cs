@@ -82,7 +82,7 @@ sealed class AwsSns
             }, ctx)
             .ConfigureAwait(false);
 
-        if (subscriptions.Subscriptions.Any(x => x.Endpoint == sqsArn.Value))
+        if (subscriptions.Subscriptions.Exists(x => x.Endpoint == sqsArn.Value))
         {
             logger.LogInformation("Subscription for {SqsArnValue} already added to {SnsArnValue}",
                 sqsArn.Value, snsArn.Value);

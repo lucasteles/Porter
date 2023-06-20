@@ -1,11 +1,8 @@
 using Amazon.SQS;
-using NUnit.Framework.Interfaces;
-using Porter;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;
 using Porter.Models;
 using Porter.Services;
-using TestMessage = Porter.Aws.Tests.Builders.TestMessage;
 
 namespace Porter.Aws.Tests.Specs.Integration;
 

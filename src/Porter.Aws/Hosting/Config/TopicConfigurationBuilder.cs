@@ -49,7 +49,7 @@ public sealed class TopicConfigurationBuilder<TMessage> : ITopicConfigurationBui
         var config =
             new ConsumerConfig
             {
-                ErrorHandler = errorHandler,
+                ErrorListener = errorHandler,
                 NameOverride = topicNameOverride,
                 MaxConcurrency = concurrency ?? settings.QueueMaxReceiveCount,
                 ConsumeTimeout =

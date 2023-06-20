@@ -1,13 +1,19 @@
+using System.Runtime.Serialization;
 using Porter.Models;
 
 namespace Porter.Hosting;
 
+/// <inheritdoc />
+[Serializable]
 public sealed class PorterPublishException : PorterException
 {
     internal PorterPublishException(Guid id, Guid? correlation) : base(
         $"Unable to publish message {correlation?.ToString() ?? "no-correlation"}.{id}")
-    {
-    }
+    { }
+
+    /// <inheritdoc />
+    PorterPublishException(SerializationInfo info, StreamingContext context)
+        : base(info, context) { }
 }
 
 sealed class TypedProducer<TMessage> : IProducer<TMessage> where TMessage : notnull
@@ -25,13 +31,13 @@ sealed class TypedProducer<TMessage> : IProducer<TMessage> where TMessage : notn
     }
 
     public Task<PublishResult> TryPublish(TMessage message, Guid? correlationId,
-        CancellationToken ctx = default) =>
-        producer.Publish(topicName, message, correlationId, options, ctx);
+        CancellationToken ct = default) =>
+        producer.Publish(topicName, message, correlationId, options, ct);
 
     public async Task Publish(TMessage message, Guid? correlationId,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
     {
-        var result = await TryPublish(message, correlationId, ctx);
+        var result = await TryPublish(message, correlationId, ct);
 
         if (!result.IsSuccess)
             throw new PorterPublishException(
@@ -55,23 +61,23 @@ sealed class TypedProducer<TMessage1, TMessage2> : IProducer<TMessage1, TMessage
 
     public Task<PublishResult>
         TryPublish(TMessage1 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer1.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer1.TryPublish(message, correlationId, ct);
 
     public Task<PublishResult>
         TryPublish(TMessage2 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer2.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer2.TryPublish(message, correlationId, ct);
 
     public Task
         Publish(TMessage1 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer1.Publish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer1.Publish(message, correlationId, ct);
 
     public Task
         Publish(TMessage2 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer2.Publish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer2.Publish(message, correlationId, ct);
 }
 
 sealed class TypedProducer<TMessage1, TMessage2, TMessage3> :
@@ -92,31 +98,31 @@ sealed class TypedProducer<TMessage1, TMessage2, TMessage3> :
 
     public Task<PublishResult>
         TryPublish(TMessage1 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer1.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer1.TryPublish(message, correlationId, ct);
 
     public Task<PublishResult>
         TryPublish(TMessage2 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer2.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer2.TryPublish(message, correlationId, ct);
 
     public Task<PublishResult>
         TryPublish(TMessage3 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer3.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer3.TryPublish(message, correlationId, ct);
 
     public Task
         Publish(TMessage1 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer1.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer1.TryPublish(message, correlationId, ct);
 
     public Task
         Publish(TMessage2 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer2.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer2.TryPublish(message, correlationId, ct);
 
     public Task
         Publish(TMessage3 message, Guid? correlationId,
-            CancellationToken ctx = default) =>
-        producer3.TryPublish(message, correlationId, ctx);
+            CancellationToken ct = default) =>
+        producer3.TryPublish(message, correlationId, ct);
 }

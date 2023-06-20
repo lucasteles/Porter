@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MassTransit;
 using Microsoft.Extensions.Options;
-using Porter;
 using Porter.Clients;
 using Porter.Hosting;
 using Porter.Hosting.Job;
@@ -275,7 +268,7 @@ class LocalMessage<T> : IMessage<T> where T : notnull
     public Guid? CorrelationId { get; set; }
     public DateTime Datetime { get; set; }
     public T Body { get; set; }
-    public uint RetryNumber { get; set; }
+    public int RetryNumber { get; set; }
     public string QueueUrl { get; set; } = "";
     public string? TopicArn { get; set; }
     public Task Delete() => Task.CompletedTask;

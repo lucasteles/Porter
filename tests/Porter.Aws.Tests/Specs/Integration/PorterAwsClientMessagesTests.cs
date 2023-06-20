@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Amazon.SQS.Model;
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;

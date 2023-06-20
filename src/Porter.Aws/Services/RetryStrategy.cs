@@ -2,17 +2,17 @@ namespace Porter.Services;
 
 public interface IRetryStrategy
 {
-    TimeSpan Evaluate(uint retryNumber);
+    TimeSpan Evaluate(int retryNumber);
 }
 
 sealed class Power2RetryStrategy : IRetryStrategy
 {
-    public TimeSpan Evaluate(uint retryNumber) => TimeSpan.FromSeconds(Math.Pow(2, retryNumber));
+    public TimeSpan Evaluate(int retryNumber) => TimeSpan.FromSeconds(Math.Pow(2, retryNumber));
 }
 
 class FuncRetryStrategy : IRetryStrategy
 {
-    readonly Func<uint, TimeSpan> strategy;
-    public FuncRetryStrategy(Func<uint, TimeSpan> strategy) => this.strategy = strategy;
-    public TimeSpan Evaluate(uint retryNumber) => strategy(retryNumber);
+    readonly Func<int, TimeSpan> strategy;
+    public FuncRetryStrategy(Func<int, TimeSpan> strategy) => this.strategy = strategy;
+    public TimeSpan Evaluate(int retryNumber) => strategy(retryNumber);
 }

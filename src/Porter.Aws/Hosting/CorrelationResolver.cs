@@ -8,7 +8,7 @@ namespace Porter.Hosting;
 
 class NewIdCorrelationIdProvider : ICorrelationIdProvider
 {
-    public string GenerateCorrelationId(HttpContext ctx) => NewId.NextGuid().ToString();
+    public string GenerateCorrelationId(HttpContext context) => NewId.NextGuid().ToString();
 }
 
 public interface ICorrelationResolver

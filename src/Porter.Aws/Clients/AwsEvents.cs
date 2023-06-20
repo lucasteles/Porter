@@ -54,7 +54,7 @@ sealed class AwsEvents : IProduceDriver
         }, ctx);
 
         return rules is not null &&
-               rules.Rules.Any(r =>
+               rules.Rules.Exists(r =>
                    r.Name.Trim() == topicId.TopicName && r.State == RuleState.ENABLED);
     }
 
@@ -67,7 +67,7 @@ sealed class AwsEvents : IProduceDriver
             Rule = topic.TopicName,
         }, ctx);
 
-        if (ruleTargets.Targets.Any(x => x.Arn == snsArn.Value))
+        if (ruleTargets.Targets.Exists(x => x.Arn == snsArn.Value))
         {
             logger.LogInformation("Target with {TopicTopicName}[{SnsArnValue}] already added", topic.TopicName, snsArn.Value);
             return;

@@ -157,9 +157,9 @@ sealed class AwsSqs : IConsumeDriver
     public async Task UpdateQueueAttributes(
         string queueName,
         TimeSpan visibilityTimeout,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
     {
-        var queue = await GetQueue(queueName, ctx);
+        var queue = await GetQueue(queueName, ct);
         if (queue is null)
             return;
 
@@ -174,7 +174,7 @@ sealed class AwsSqs : IConsumeDriver
             return;
 
         logger.LogInformation("Updating queue {QueueName} attributes", queueName);
-        await sqs.SetQueueAttributesAsync(queue.Value.Url.ToString(), attrs, ctx);
+        await sqs.SetQueueAttributesAsync(queue.Value.Url.ToString(), attrs, ct);
 
         var info = queue.Value with
         {
@@ -262,7 +262,7 @@ sealed class AwsSqs : IConsumeDriver
                             .TryGetValue(MessageSystemAttributeName.ApproximateReceiveCount,
                                 out var receiveString) &&
                         receiveString is not null &&
-                        uint.TryParse(receiveString, out var received)
+                        int.TryParse(receiveString, out var received)
                             ? received
                             : 0;
 

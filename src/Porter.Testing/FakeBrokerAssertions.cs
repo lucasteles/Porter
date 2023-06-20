@@ -3,7 +3,6 @@ using FluentAssertions.Execution;
 using FluentAssertions.Json;
 using FluentAssertions.Primitives;
 using Newtonsoft.Json.Linq;
-using Porter;
 using Porter.Services;
 
 namespace Porter.Testing;

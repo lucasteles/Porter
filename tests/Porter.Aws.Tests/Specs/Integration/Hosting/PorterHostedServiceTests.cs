@@ -5,7 +5,6 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;
 using Porter.Extensions;
@@ -104,7 +103,7 @@ public class PorterHostedServiceTests : LocalstackFixture
 
         var sns = GetService<IAmazonSimpleNotificationService>();
         var savedRules = await sns.ListTopicsAsync();
-        var snsTopics = savedRules.Topics.Select(x => x.TopicArn.Split(":").Last());
+        var snsTopics = savedRules.Topics.Select(x => x.TopicArn.Split(":")[^1]);
 
         snsTopics.Should().BeEquivalentTo(topics);
     }

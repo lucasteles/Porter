@@ -39,17 +39,17 @@ sealed class PorterAwsClient : IPorterClient
     public async ValueTask<IReadOnlyCollection<IMessage<T>>> Receive<T>(
         string topic,
         TopicNameOverride? nameOverride = null,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
         where T : notnull
     {
-        var message = await Receive(topic, nameOverride, ctx);
+        var message = await Receive(topic, nameOverride, ct);
         return message.Select(m => m.Map(s => serializer.Deserialize<T>(s))).ToArray();
     }
 
     public ValueTask<IReadOnlyCollection<IMessage>> Receive(string topic,
         TopicNameOverride? nameOverride = null,
-        CancellationToken ctx = default) =>
-        Receive(CreateTopicName(topic, nameOverride), ctx);
+        CancellationToken ct = default) =>
+        Receive(CreateTopicName(topic, nameOverride), ct);
 
     internal async ValueTask<IReadOnlyCollection<IMessage>> Receive(TopicId topic,
         CancellationToken ctx) =>
@@ -58,40 +58,40 @@ sealed class PorterAwsClient : IPorterClient
     public async Task<IReadOnlyCollection<IMessage<T>>> DeadLetters<T>(
         string queueName,
         TopicNameOverride? nameOverride = null,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
         where T : notnull
     {
-        var message = await DeadLetters(queueName, nameOverride, ctx);
+        var message = await DeadLetters(queueName, nameOverride, ct);
         return message.Select(m => m.Map(s => serializer.Deserialize<T>(s))).ToArray();
     }
 
     public Task<IReadOnlyCollection<IMessage>> DeadLetters(string queueName,
         TopicNameOverride? nameOverride = null,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
     {
         var topic = CreateTopicName(queueName, nameOverride);
-        return consumer.ReceiveDeadLetters(topic, ctx);
+        return consumer.ReceiveDeadLetters(topic, ct);
     }
 
     public Task<PublishResult> Publish<T>(string topicName, T message,
         Guid? correlationId = null,
         ProduceOptions? options = null,
-        CancellationToken ctx = default)
+        CancellationToken ct = default)
         where T : notnull
     {
         var rawMessage = serializer.Serialize(message);
-        return Publish(topicName, rawMessage, correlationId, options, ctx);
+        return Publish(topicName, rawMessage, correlationId, options, ct);
     }
 
     public Task<PublishResult> Publish(string topicName, string message,
         Guid? correlationId = null,
         ProduceOptions? options = null,
-        CancellationToken ctx = default) =>
+        CancellationToken ct = default) =>
         Publish(
             CreateTopicName(topicName, options?.NameOverride),
             message,
             correlationId,
-            ctx);
+            ct);
 
     TopicId CreateTopicName(string name, TopicNameOverride? nameOverride) =>
         new(name, config.Value.FromOverride(nameOverride));

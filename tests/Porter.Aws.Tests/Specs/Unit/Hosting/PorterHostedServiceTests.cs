@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Reflection;
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;
@@ -70,7 +69,7 @@ public class PorterHostedServiceTests : BaseTest
             .MustHaveHappenedOnceExactly();
     }
 
-    static IConsumerDescriber[] GetConsumerDescribers()
+    static ImmutableArray<IConsumerDescriber> GetConsumerDescribers()
     {
         var builder = new ConsumerDescriberBuilder();
         return faker
@@ -81,7 +80,7 @@ public class PorterHostedServiceTests : BaseTest
                 .WithMessageType(types.Key)
                 .WithConsumerType(types.Value)
                 .Generate())
-            .ToArray();
+            .ToImmutableArray();
     }
 }
 

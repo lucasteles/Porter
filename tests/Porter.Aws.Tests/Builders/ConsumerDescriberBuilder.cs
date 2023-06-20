@@ -1,4 +1,3 @@
-using Porter;
 using Porter.Hosting;
 
 namespace Porter.Aws.Tests.Builders;
@@ -6,7 +5,7 @@ namespace Porter.Aws.Tests.Builders;
 class ConsumerDescriberBuilder
 {
     Type consumerType = typeof(FakeMessageConsumer<TestMessage>);
-    Func<Exception, Task>? errorHandler;
+    Func<Exception, Task>? errorListener;
     int maxConcurrency = 1;
     Type messageType = typeof(TestMessage);
     TimeSpan pollingInterval = TimeSpan.FromMilliseconds(1);
@@ -61,7 +60,7 @@ class ConsumerDescriberBuilder
 
     public ConsumerDescriberBuilder WithErrorHandler(Func<Exception, Task> handler)
     {
-        errorHandler = handler;
+        errorListener = handler;
         return this;
     }
 
@@ -73,7 +72,7 @@ class ConsumerDescriberBuilder
         A.CallTo(() => value.MessageType).Returns(messageType);
         A.CallTo(() => value.MaxConcurrency).Returns(maxConcurrency);
         A.CallTo(() => value.PollingInterval).Returns(pollingInterval);
-        A.CallTo(() => value.ErrorListener).Returns(errorHandler);
+        A.CallTo(() => value.ErrorListener).Returns(errorListener);
         return value;
     }
 }

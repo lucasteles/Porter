@@ -53,7 +53,7 @@ public class PorterHealthCheck : IHealthCheck
             .Select(t => IsQueueAccessible(t.Id, ctx));
 
         var healthyQueues = await Task.WhenAll(queues);
-        return healthyQueues.All(x => x);
+        return Array.TrueForAll(healthyQueues, x => x);
     }
 
     static bool IsSuccess(AmazonWebServiceResponse response) =>

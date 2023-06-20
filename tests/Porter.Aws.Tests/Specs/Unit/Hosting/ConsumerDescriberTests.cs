@@ -1,4 +1,3 @@
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Hosting;
 using Porter.Models;

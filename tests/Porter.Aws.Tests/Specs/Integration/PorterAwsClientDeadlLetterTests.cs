@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Porter;
 using Porter.Aws.Tests.Builders;
 using Porter.Aws.Tests.TestUtils;
 using Porter.Aws.Tests.TestUtils.Fixtures;

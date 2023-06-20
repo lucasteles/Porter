@@ -8,7 +8,7 @@ class FakeMessageBuilder
     readonly Guid id;
     readonly Guid correlationId;
     string body;
-    uint retryNumber;
+    int retryNumber;
 
     public FakeMessageBuilder()
     {
@@ -36,7 +36,7 @@ class FakeMessageBuilder
         return value;
     }
 
-    public FakeMessageBuilder WithRetry(uint retry)
+    public FakeMessageBuilder WithRetry(int retry)
     {
         retryNumber = retry;
         return this;
