@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace Helpers;
 
 public static class Extensions
@@ -7,6 +9,10 @@ public static class Extensions
         tool
             .SetProcessToolPath(DotNetPath)
             .SetProcessArgumentConfigurator(args => new Arguments().Add(localtool).Concatenate(args));
+
+    [CanBeNull]
+    public static Project FindProjects(this Solution sln, string name) =>
+        sln.AllProjects.SingleOrDefault(x => name.Equals(x.Name, StringComparison.Ordinal));
 
     public static ITargetDefinition TryExecutes(
         this ITargetDefinition @this,

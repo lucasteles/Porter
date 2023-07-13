@@ -12,7 +12,7 @@ public static class Commands
             PlatformFamily.Windows => "explorer",
             PlatformFamily.OSX => "open",
             _ => new[] { "google-chrome", "firefox" }
-                .FirstOrDefault(CommandExists),
+                .FirstOrDefault(CommandExists)
         });
 
     public static Tool GetTool(string name) =>

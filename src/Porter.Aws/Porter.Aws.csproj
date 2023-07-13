@@ -8,18 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.EventBridge" Version="3.7.101.37" />
-    <PackageReference Include="AWSSDK.KeyManagementService" Version="3.7.101.74" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.100.99" />
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.101.35" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="3.7.102.42" />
+    <PackageReference Include="AWSSDK.KeyManagementService" Version="3.7.104.3" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.103.10" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.101.88" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
     <PackageReference Include="NewId" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Update="SonarAnalyzer.CSharp" Version="9.5.0.73987">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 

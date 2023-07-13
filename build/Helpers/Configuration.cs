@@ -1,8 +1,8 @@
 using System.Reflection;
 using JetBrains.Annotations;
+using Nuke.Common.Utilities;
 
 namespace Helpers;
-
 [TypeConverter(typeof(TypeConverter<Configuration>))]
 public class Configuration : Enumeration
 {
@@ -16,8 +16,7 @@ public record Sdk(Version Version, string RollForward);
 
 public record GlobalJson(Sdk Sdk);
 
-[PublicAPI]
-[UsedImplicitly(ImplicitUseKindFlags.Assign)]
+[PublicAPI, UsedImplicitly(ImplicitUseKindFlags.Assign)]
 public class GlobalJsonAttribute : ParameterAttribute
 {
     readonly AbsolutePath filePath;
@@ -31,5 +30,5 @@ public class GlobalJsonAttribute : ParameterAttribute
     public override bool List { get; set; }
 
     public override object GetValue(MemberInfo member, object instance)
-        => SerializationTasks.JsonDeserializeFromFile<GlobalJson>(filePath);
+        => filePath.ReadJson<GlobalJson>();
 }

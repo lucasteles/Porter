@@ -1,63 +1,30 @@
 using Amazon.KeyManagementService;
-using Amazon.KeyManagementService.Model;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Configurations;
-using DotNet.Testcontainers.Containers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Porter.Clients;
 using Porter.Extensions;
 using Porter.Models;
 using Porter.Services;
+using Testcontainers.LocalStack;
 
 [assembly: LevelOfParallelism(5)]
 
 namespace Porter.Aws.Tests.TestUtils.Fixtures;
-
-public class LocalStackConfiguration : TestcontainerMessageBrokerConfiguration
-{
-    const string LocalStackImage = "localstack/localstack:1.1.0";
-    const int LocalStackPort = 4566;
-
-    public LocalStackConfiguration()
-        : this(LocalStackImage)
-    {
-    }
-
-    public LocalStackConfiguration(string image)
-        : base(image, LocalStackPort)
-    {
-        Environments.Add("EXTERNAL_SERVICE_PORTS_START", "4510");
-        Environments.Add("EXTERNAL_SERVICE_PORTS_END", "4559");
-    }
-
-    public override IWaitForContainerOS WaitStrategy => Wait.ForUnixContainer()
-        .UntilPortIsAvailable(LocalStackPort);
-}
 
 [Parallelizable(ParallelScope.Self)]
 public class LocalstackFixture : ServicesFixture
 {
     protected PorterConfig config = null!;
     protected string kmsTestKeyId = "";
-    LocalStackTestcontainer localstack = null!;
+    LocalStackContainer localstack = null!;
 
-    string ServiceUrl
-    {
-        get
-        {
-            var builder = new UriBuilder(localstack.ConnectionString) { Scheme = Uri.UriSchemeHttp };
-            return builder.Uri.ToString();
-        }
-    }
+    string ServiceUrl =>
+        new UriBuilder(localstack.GetConnectionString()) { Scheme = Uri.UriSchemeHttp }.Uri.ToString();
 
     protected override async Task BeforeSetup()
     {
-        localstack = new TestcontainersBuilder<LocalStackTestcontainer>()
-            .WithMessageBroker(new LocalStackConfiguration())
-            .WithWaitStrategy(
-                Wait.ForUnixContainer()
-                    .UntilPortIsAvailable(4566))
+        localstack = new LocalStackBuilder()
+            .WithImage("localstack/localstack:latest")
             .Build();
 
         await localstack.StartAsync();
@@ -97,10 +64,10 @@ public class LocalstackFixture : ServicesFixture
     {
         var kms = GetService<IAmazonKeyManagementService>();
         var key = await kms.CreateKeyAsync(new() { Description = "Test key" });
-        await kms.CreateAliasAsync(new CreateAliasRequest
+        await kms.CreateAliasAsync(new()
         {
             AliasName = config.PubKey,
-            TargetKeyId = key.KeyMetadata.KeyId,
+            TargetKeyId = key.KeyMetadata.KeyId
         });
         return key.KeyMetadata.KeyId;
     }

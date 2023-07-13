@@ -1,7 +1,8 @@
 class BuildProject : NukeBuild
 {
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
+    readonly Configuration Configuration =
+        IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [Parameter(List = false)] readonly bool DotnetRunningInContainer;
     [GlobalJson] readonly GlobalJson GlobalJson;
@@ -17,10 +18,11 @@ class BuildProject : NukeBuild
 
     Target Clean => _ => _
         .Description("Clean project directories")
+        .OnlyWhenStatic(() => BuildProjectDirectory is not null)
         .Executes(() => RootDirectory
             .GlobDirectories("**/bin", "**/obj", "**/TestResults")
-            .Where(x => !x.ToString().StartsWith(BuildProjectDirectory))
-            .ForEach(EnsureCleanDirectory));
+            .Where(x => !x.ToString().StartsWith(BuildProjectDirectory ?? string.Empty))
+            .ForEach(d => d.CreateOrCleanDirectory()));
 
     Target Restore => _ => _
         .Description("Run dotnet restore in every project")
@@ -41,14 +43,12 @@ class BuildProject : NukeBuild
     Target Test => _ => _
         .Description("Run all tests")
         .DependsOn(Build)
-        .Executes(() => Solution
-            .GetProjects("*.Tests")
-            .ForEach(project =>
-                DotNetTest(s => s
-                    .EnableNoBuild()
-                    .EnableNoRestore()
-                    .SetConfiguration(Configuration)
-                    .SetProjectFile(project))));
+        .Executes(() =>
+            DotNetTest(s => s
+                .EnableNoBuild()
+                .EnableNoRestore()
+                .SetConfiguration(Configuration)
+                .SetProjectFile(Solution)));
 
     Target TestCoverage => _ => _
         .Description("Run tests with coverage")
@@ -68,10 +68,11 @@ class BuildProject : NukeBuild
                 .SetReports(CoverageFiles)
                 .SetTargetDirectory(TestReportDirectory)
                 .SetReportTypes(ReportTypes.TextSummary));
-            ReadAllLines(TestReportDirectory / "Summary.txt").ForEach(l => Console.WriteLine(l));
+            (TestReportDirectory / "Summary.txt").ReadAllLines().ForEach(l => Console.WriteLine(l));
         });
 
-    const string localstackContainerName = "sub-localstack";
+    const string localstackContainerName = "porter-localstack";
+
     Target Localstack => _ => _
         .Description("Starts the localstack container in docker")
         .OnlyWhenStatic(() => !DotnetRunningInContainer)
@@ -91,7 +92,8 @@ class BuildProject : NukeBuild
     Target Lint => _ => _
         .Description("Check for codebase formatting and analysers")
         .DependsOn(Build)
-        .Executes(() => DotNet($"format -v normal --no-restore --verify-no-changes \"{Solution.Path}\""));
+        .Executes(() =>
+            DotNet($"format -v normal --no-restore --verify-no-changes \"{Solution.Path}\""));
 
     Target Format => _ => _
         .Description("Try fix codebase formatting and analysers")
@@ -146,7 +148,7 @@ class BuildProject : NukeBuild
         .Executes(() =>
         {
             var output = RootDirectory / "Badges";
-            EnsureCleanDirectory(output);
+            output.CreateOrCleanDirectory();
             Badges.ForCoverage(output, CoverageFiles);
             Badges.ForDotNetVersion(output, GlobalJson);
             Badges.ForTests(output, TestResultFile);
