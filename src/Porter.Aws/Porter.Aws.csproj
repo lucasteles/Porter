@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.EventBridge" Version="3.7.102.42" />
     <PackageReference Include="AWSSDK.KeyManagementService" Version="3.7.104.4" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.103.10" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.200.3" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.101.88" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
