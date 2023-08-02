@@ -52,8 +52,8 @@ sealed class PorterAwsClient : IPorterClient
         Receive(CreateTopicName(topic, nameOverride), ct);
 
     internal async ValueTask<IReadOnlyCollection<IMessage>> Receive(TopicId topic,
-        CancellationToken ctx) =>
-        await consumer.ReceiveMessages(topic, ctx);
+        CancellationToken ct) =>
+        await consumer.ReceiveMessages(topic, ct);
 
     public async Task<IReadOnlyCollection<IMessage<T>>> DeadLetters<T>(
         string queueName,
@@ -99,16 +99,16 @@ sealed class PorterAwsClient : IPorterClient
     internal async Task<PublishResult> Publish(
         TopicId topic, string message,
         Guid? correlationId,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(topic);
 
         logger.LogDebug("{Topic}: Start send message", topic.TopicName);
-        await resources.EnsureTopicExists(topic, ctx);
+        await resources.EnsureTopicExists(topic, ct);
         var validCorrelationId = correlationId ?? correlationResolver.GetId();
         var publishResult =
-            await producer.Produce(topic, message, validCorrelationId, ctx);
+            await producer.Produce(topic, message, validCorrelationId, ct);
         logger.LogInformation(
             "<- {RawName}[{CorrelationId}.{MessageId}] - Produced {TopicName} - Success: {IsSuccess}",
             topic.RawName, publishResult.CorrelationId, publishResult.MessageId, topic.TopicName,

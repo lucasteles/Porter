@@ -32,24 +32,24 @@ sealed class MessageMeta : IMessageMeta
 
 public interface IWeakConsumer
 {
-    internal Task Consume(object message, IMessageMeta meta, CancellationToken ctx);
+    internal Task Consume(object message, IMessageMeta meta, CancellationToken ct);
 }
 
 public interface IMessageConsumer<in TMessage> : IWeakConsumer where TMessage : notnull
 {
-    Task IWeakConsumer.Consume(object message, IMessageMeta meta, CancellationToken ctx) =>
-        Consume((TMessage)message, meta, ctx);
+    Task IWeakConsumer.Consume(object message, IMessageMeta meta, CancellationToken ct) =>
+        Consume((TMessage)message, meta, ct);
 
-    Task Consume(TMessage message, IMessageMeta meta, CancellationToken ctx);
+    Task Consume(TMessage message, IMessageMeta meta, CancellationToken ct);
 }
 
 public interface IConsumer<in TMessage> : IMessageConsumer<TMessage> where TMessage : notnull
 {
     Task IMessageConsumer<TMessage>.
-        Consume(TMessage message, IMessageMeta meta, CancellationToken ctx) =>
-        Consume(message, ctx);
+        Consume(TMessage message, IMessageMeta meta, CancellationToken ct) =>
+        Consume(message, ct);
 
-    Task Consume(TMessage message, CancellationToken ctx);
+    Task Consume(TMessage message, CancellationToken ct);
 }
 
 public interface IMessageConsumer : IMessageConsumer<string>

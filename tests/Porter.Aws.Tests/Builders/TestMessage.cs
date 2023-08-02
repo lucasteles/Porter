@@ -72,12 +72,12 @@ public class TestMessageSuper : TestMessage
 
 public class FakeMessageConsumer<T> : IMessageConsumer<T> where T : notnull
 {
-    public virtual Task Consume(T message, IMessageMeta meta, CancellationToken ctx) =>
+    public virtual Task Consume(T message, IMessageMeta meta, CancellationToken ct) =>
         Task.CompletedTask;
 }
 
 public class FakeConsumer<T> : IConsumer<T> where T : notnull
 {
-    public virtual Task Consume(T message, CancellationToken ctx) =>
+    public virtual Task Consume(T message, CancellationToken ct) =>
         Task.CompletedTask;
 }

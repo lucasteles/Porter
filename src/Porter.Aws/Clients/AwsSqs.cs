@@ -15,8 +15,8 @@ readonly record struct QueueInfo(Uri Url, SqsArn Arn, TimeSpan VisibilityTimeout
 
 interface IConsumeDriver : IDisposable
 {
-    Task<IReadOnlyCollection<IMessage>> ReceiveMessages(TopicId topic, CancellationToken ctx);
-    Task<IReadOnlyCollection<IMessage>> ReceiveDeadLetters(TopicId topic, CancellationToken ctx);
+    Task<IReadOnlyCollection<IMessage>> ReceiveMessages(TopicId topic, CancellationToken ct);
+    Task<IReadOnlyCollection<IMessage>> ReceiveDeadLetters(TopicId topic, CancellationToken ct);
 }
 
 sealed class AwsSqs : IConsumeDriver
@@ -70,13 +70,13 @@ sealed class AwsSqs : IConsumeDriver
         this.config = config.Value;
     }
 
-    public async Task<QueueInfo> GetQueueAttributes(string queueUrl, CancellationToken ctx)
+    public async Task<QueueInfo> GetQueueAttributes(string queueUrl, CancellationToken ct)
     {
-        var response = await sqs.GetQueueAttributesAsync(queueUrl, new List<string>
+        var response = await sqs.GetQueueAttributesAsync(queueUrl, new()
             {
                 QueueAttributeName.QueueArn,
                 QueueAttributeName.VisibilityTimeout,
-            }, ctx)
+            }, ct)
             .ConfigureAwait(false);
 
         logger.LogDebug("Queue Attributes Response is: {Response}",
@@ -92,7 +92,7 @@ sealed class AwsSqs : IConsumeDriver
     public void ClearCache() => queueUrlCache.Clear();
 
     public async ValueTask<QueueInfo?> GetQueue(string queueName,
-        CancellationToken ctx, bool deadLetter = false)
+        CancellationToken ct, bool deadLetter = false)
     {
         var queue = $"{(deadLetter ? "dead_letter_" : string.Empty)}{queueName}";
 
@@ -101,31 +101,31 @@ sealed class AwsSqs : IConsumeDriver
 
         var responseQueues =
             await sqs.ListQueuesAsync(new ListQueuesRequest
-            {
-                QueueNamePrefix = queue,
-                MaxResults = 1000,
-            }, ctx)
+                {
+                    QueueNamePrefix = queue,
+                    MaxResults = 1000,
+                }, ct)
                 .ConfigureAwait(false);
 
         var url = responseQueues.QueueUrls.Find(name => name.Contains(queue));
         if (url is null) return null;
 
-        var info = await GetQueueAttributes(url, ctx);
+        var info = await GetQueueAttributes(url, ct);
         queueUrlCache.AddOrUpdate(queue, info, (_, _) => info);
         return info;
     }
 
-    public async Task<bool> QueueExists(string queueName, CancellationToken ctx,
+    public async Task<bool> QueueExists(string queueName, CancellationToken ct,
         bool deadLetter = false) =>
-        await GetQueue(queueName, ctx, deadLetter) is not null;
+        await GetQueue(queueName, ct, deadLetter) is not null;
 
-    public async Task<QueueInfo> CreateQueue(string queueName, CancellationToken ctx)
+    public async Task<QueueInfo> CreateQueue(string queueName, CancellationToken ct)
     {
         logger.LogInformation("Creating queue: {Name}", queueName);
-        var keyId = await kms.GetKey(ctx) ??
+        var keyId = await kms.GetKey(ct) ??
                     throw new InvalidOperationException("Default KMS EncryptionKey Id not found");
 
-        var deadLetter = await CreateDeadLetterQueue(queueName, keyId.Value, ctx);
+        var deadLetter = await CreateDeadLetterQueue(queueName, keyId.Value, ct);
 
         var deadLetterPolicy = new
         {
@@ -148,10 +148,10 @@ sealed class AwsSqs : IConsumeDriver
                     $"{(int)TimeSpan.FromDays(config.MessageRetentionInDays).TotalSeconds}",
             },
         };
-        var q = await sqs.CreateQueueAsync(createQueueRequest, ctx)
+        var q = await sqs.CreateQueueAsync(createQueueRequest, ct)
             .ConfigureAwait(false);
 
-        return await GetQueueAttributes(q.QueueUrl, ctx);
+        return await GetQueueAttributes(q.QueueUrl, ct);
     }
 
     public async Task UpdateQueueAttributes(
@@ -184,7 +184,7 @@ sealed class AwsSqs : IConsumeDriver
     }
 
     async Task<QueueInfo> CreateDeadLetterQueue(string queueName, string keyId,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         logger.LogInformation("Creating dead letter queue: {Name}", queueName);
         var q = await sqs.CreateQueueAsync(
@@ -196,19 +196,19 @@ sealed class AwsSqs : IConsumeDriver
                         ["Policy"] = Iam,
                         ["KmsMasterKeyId"] = keyId,
                     },
-                }, ctx)
+                }, ct)
             .ConfigureAwait(false);
-        return await GetQueueAttributes(q.QueueUrl, ctx);
+        return await GetQueueAttributes(q.QueueUrl, ct);
     }
 
     async Task<IReadOnlyCollection<IMessage<string>>> ReceiveMessages(
         TopicId topic,
         bool deadLetter,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         var queue = deadLetter ? $"{DeadLetterPrefix}{topic.QueueName}" : topic.QueueName;
 
-        if (await GetQueue(queue, ctx) is not { } queueInfo)
+        if (await GetQueue(queue, ct) is not { } queueInfo)
             throw new InvalidOperationException($"Unable to get '{queue}' data");
 
         var queueUrl = queueInfo.Url.ToString();
@@ -222,7 +222,7 @@ sealed class AwsSqs : IConsumeDriver
                     {
                         MessageSystemAttributeName.ApproximateReceiveCount,
                     },
-                }, ctx)
+                }, ct)
             .ConfigureAwait(false);
 
         if (receiveMessageResponse?.Messages is not { Count: > 0 } messages)
@@ -295,12 +295,12 @@ sealed class AwsSqs : IConsumeDriver
     }
 
     public Task<IReadOnlyCollection<IMessage>> ReceiveDeadLetters(TopicId topic,
-        CancellationToken ctx) =>
-        ReceiveMessages(topic, true, ctx);
+        CancellationToken ct) =>
+        ReceiveMessages(topic, true, ct);
 
     public Task<IReadOnlyCollection<IMessage>>
-        ReceiveMessages(TopicId topic, CancellationToken ctx) =>
-        ReceiveMessages(topic, false, ctx);
+        ReceiveMessages(TopicId topic, CancellationToken ct) =>
+        ReceiveMessages(topic, false, ct);
 
     internal class SnsEnvelope
     {

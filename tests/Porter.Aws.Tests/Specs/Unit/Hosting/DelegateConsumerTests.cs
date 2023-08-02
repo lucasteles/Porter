@@ -27,8 +27,8 @@ public class DelegateConsumerTests : BaseTest
     public async Task ShouldConstructDelegateShouldThrowIfNoMessageTypePassed()
     {
         var action = () => ValidateDelegateConsumer(
-            async (IAsyncFakeService c, CancellationToken ctx) =>
-                await c.Work(null!, ctx));
+            async (IAsyncFakeService c, CancellationToken ct) =>
+                await c.Work(null!, ct));
 
         await action.Should()
             .ThrowAsync<PorterException>()
@@ -38,23 +38,23 @@ public class DelegateConsumerTests : BaseTest
     [Test]
     public async Task ShouldConstructDelegateFuncConsumer() =>
         await ValidateDelegateConsumer(
-            async (TestMessage m, IAsyncFakeService c, CancellationToken ctx) =>
-                await c.Work(m, ctx));
+            async (TestMessage m, IAsyncFakeService c, CancellationToken ct) =>
+                await c.Work(m, ct));
 
     [Test]
     public async Task ShouldConstructDelegateActionConsumer() =>
         await ValidateDelegateConsumer(
-            new Action<TestMessage, IAsyncFakeService, CancellationToken>((m, c, ctx) =>
+            new Action<TestMessage, IAsyncFakeService, CancellationToken>((m, c, ct) =>
             {
-                c.Work(m, ctx).GetAwaiter().GetResult();
+                c.Work(m, ct).GetAwaiter().GetResult();
             }));
 
     [Test]
     public async Task ShouldConstructDelegateNonTaskFunc() =>
         await ValidateDelegateConsumer(
-            (TestMessage m, IAsyncFakeService c, CancellationToken ctx) =>
+            (TestMessage m, IAsyncFakeService c, CancellationToken ct) =>
             {
-                c.Work(m, ctx).GetAwaiter().GetResult();
+                c.Work(m, ct).GetAwaiter().GetResult();
             });
 }
 
@@ -64,5 +64,5 @@ public interface IAsyncFakeService : IAsyncFakeService<TestMessage>
 
 public interface IAsyncFakeService<in T> where T : notnull
 {
-    Task Work(T message, CancellationToken ctx);
+    Task Work(T message, CancellationToken ct);
 }

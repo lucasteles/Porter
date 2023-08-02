@@ -21,10 +21,10 @@ sealed class AwsSns
         this.logger = logger;
     }
 
-    public async Task<SnsArn> EnsureTopic(TopicId topicId, CancellationToken ctx)
+    public async Task<SnsArn> EnsureTopic(TopicId topicId, CancellationToken ct)
     {
         var policy = GetPolicy(topicId.Event, RegionEndpoint.USEast1);
-        var keyId = await kms.GetKey(ctx) ??
+        var keyId = await kms.GetKey(ct) ??
                     throw new InvalidOperationException("Default KMS EncryptionKey Id not found");
 
         logger.LogInformation("Ensuring SNS topic: {TopicIdTopicName}", topicId.TopicName);
@@ -42,7 +42,7 @@ sealed class AwsSns
             };
 
             var response = await sns.CreateTopicAsync(request,
-                    ctx)
+                    ct)
                 .ConfigureAwait(false);
 
             logger.LogDebug("SNS Topic Creation Response is: {Response}",
@@ -60,7 +60,7 @@ sealed class AwsSns
                 Name = topicId.TopicName,
             };
             var response = await sns.CreateTopicAsync(request,
-                    ctx)
+                    ct)
                 .ConfigureAwait(false);
 
             logger.LogDebug("SNS Topic Creation Response is: {Response}",
@@ -70,7 +70,7 @@ sealed class AwsSns
         }
     }
 
-    public async Task Subscribe(SnsArn snsArn, SqsArn sqsArn, CancellationToken ctx)
+    public async Task Subscribe(SnsArn snsArn, SqsArn sqsArn, CancellationToken ct)
     {
         logger.LogInformation("Subscribing SQS[{SqsArn}] to SNS[[{SnsArnValue}]", sqsArn,
             snsArn.Value);
@@ -79,7 +79,7 @@ sealed class AwsSns
             .ListSubscriptionsByTopicAsync(new ListSubscriptionsByTopicRequest
             {
                 TopicArn = snsArn.Value,
-            }, ctx)
+            }, ct)
             .ConfigureAwait(false);
 
         if (subscriptions.Subscriptions.Exists(x => x.Endpoint == sqsArn.Value))
@@ -95,7 +95,7 @@ sealed class AwsSns
                     TopicArn = snsArn.Value,
                     Protocol = "sqs",
                     Endpoint = sqsArn.Value,
-                }, ctx)
+                }, ct)
             .ConfigureAwait(false);
     }
 

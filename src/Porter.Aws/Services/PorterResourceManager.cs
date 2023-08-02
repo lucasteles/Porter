@@ -9,17 +9,17 @@ namespace Porter.Services;
 interface IPorterResourceManager
 {
     ValueTask EnsureQueueExists(string topic, TopicNameOverride? nameOverride,
-        CancellationToken ctx);
+        CancellationToken ct);
 
     ValueTask EnsureTopicExists(string topic, TopicNameOverride? nameOverride,
-        CancellationToken ctx);
+        CancellationToken ct);
 
-    ValueTask EnsureTopicExists(TopicId topic, CancellationToken ctx);
+    ValueTask EnsureTopicExists(TopicId topic, CancellationToken ct);
 
     ValueTask UpdateQueueAttr(string topic, TimeSpan? newTimeout, TopicNameOverride? nameOverride,
-        CancellationToken ctx);
+        CancellationToken ct);
 
-    Task SetupLocalstack(CancellationToken ctx);
+    Task SetupLocalstack(CancellationToken ct);
 }
 
 class AwsResourceManager : IPorterResourceManager
@@ -50,7 +50,7 @@ class AwsResourceManager : IPorterResourceManager
 
     public async ValueTask EnsureQueueExists(string topic,
         TopicNameOverride? nameOverride,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         TopicId topicId = new(topic, config.FromOverride(nameOverride));
 
@@ -66,39 +66,39 @@ class AwsResourceManager : IPorterResourceManager
             topicId.QueueName,
             config.RegionEndpoint().SystemName);
 
-        if (await sqs.QueueExists(topicId.QueueName, ctx))
+        if (await sqs.QueueExists(topicId.QueueName, ct))
             return;
 
-        var topicArn = await sns.EnsureTopic(topicId, ctx);
-        var queueInfo = await sqs.CreateQueue(topicId.QueueName, ctx);
+        var topicArn = await sns.EnsureTopic(topicId, ct);
+        var queueInfo = await sqs.CreateQueue(topicId.QueueName, ct);
         logger.LogInformation(
             "Subscribing {TopicIdQueueName}[{QueueInfoArn}] on {TopicIdTopicName}[{TopicArn}]",
             topicId.QueueName, queueInfo.Arn, topicId.TopicName, topicArn);
-        await sns.Subscribe(topicArn, queueInfo.Arn, ctx);
+        await sns.Subscribe(topicArn, queueInfo.Arn, ct);
 
-        await WaitForQueue(topicId.QueueName, ctx)
-            .WaitAsync(TimeSpan.FromMinutes(5), ctx);
+        await WaitForQueue(topicId.QueueName, ct)
+            .WaitAsync(TimeSpan.FromMinutes(5), ct);
     }
 
     public async ValueTask UpdateQueueAttr(
         string topic,
         TimeSpan? newTimeout,
         TopicNameOverride? nameOverride,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         TopicId topicId = new(topic, config.FromOverride(nameOverride));
 
         if (newTimeout is null)
             return;
-        await sqs.UpdateQueueAttributes(topicId.QueueName, newTimeout.Value, ctx);
+        await sqs.UpdateQueueAttributes(topicId.QueueName, newTimeout.Value, ct);
     }
 
-    async Task WaitForQueue(string queueName, CancellationToken ctx)
+    async Task WaitForQueue(string queueName, CancellationToken ct)
     {
-        while (await sqs.GetQueue(queueName, ctx) is null)
+        while (await sqs.GetQueue(queueName, ct) is null)
         {
             logger.LogInformation("Waiting queue be available...");
-            await Task.Delay(TimeSpan.FromSeconds(2), ctx);
+            await Task.Delay(TimeSpan.FromSeconds(2), ct);
             logger.LogInformation("Not available yet");
         }
 
@@ -107,7 +107,7 @@ class AwsResourceManager : IPorterResourceManager
 
     public async ValueTask EnsureTopicExists(string topic,
         TopicNameOverride? nameOverride,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         var overrideConfig = config.FromOverride(nameOverride);
         TopicId topicId = new(topic, overrideConfig);
@@ -120,13 +120,13 @@ class AwsResourceManager : IPorterResourceManager
                 original.TopicName, topicId.TopicName);
         }
 
-        await EnsureTopicExists(topicId, ctx);
+        await EnsureTopicExists(topicId, ct);
     }
 
     public async ValueTask EnsureTopicExists(TopicId topic,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
-        if (await events.RuleExists(topic, ctx))
+        if (await events.RuleExists(topic, ct))
         {
             logger.LogInformation("Rule {TopicTopicName} already exists", topic.TopicName);
             return;
@@ -139,14 +139,14 @@ class AwsResourceManager : IPorterResourceManager
             throw new InvalidOperationException(
                 $"Topic '{topic.TopicName}' for '{topic.Event}' does not exists");
 
-        await events.CreateRule(topic, ctx);
-        var topicArn = await sns.EnsureTopic(topic, ctx);
-        await events.PutTarget(topic, topicArn, ctx);
+        await events.CreateRule(topic, ct);
+        var topicArn = await sns.EnsureTopic(topic, ct);
+        await events.PutTarget(topic, topicArn, ct);
     }
 
-    public async Task SetupLocalstack(CancellationToken ctx)
+    public async Task SetupLocalstack(CancellationToken ct)
     {
-        var keyId = await kms.GetKey(ctx);
+        var keyId = await kms.GetKey(ct);
         if (keyId is null)
             await kms.CreteKey();
     }

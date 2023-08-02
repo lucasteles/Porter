@@ -14,7 +14,7 @@ namespace Porter.Clients;
 interface IProduceDriver : IDisposable
 {
     Task<PublishResult> Produce(TopicId topic, string message, Guid? correlationId,
-        CancellationToken ctx);
+        CancellationToken ct);
 }
 
 sealed class AwsEvents : IProduceDriver
@@ -45,27 +45,27 @@ sealed class AwsEvents : IProduceDriver
         this.config = config.Value;
     }
 
-    public async Task<bool> RuleExists(TopicId topicId, CancellationToken ctx)
+    public async Task<bool> RuleExists(TopicId topicId, CancellationToken ct)
     {
         var rules = await eventBridge.ListRulesAsync(new()
         {
             Limit = 100,
             NamePrefix = topicId.TopicName,
-        }, ctx);
+        }, ct);
 
         return rules is not null &&
                rules.Rules.Exists(r =>
                    r.Name.Trim() == topicId.TopicName && r.State == RuleState.ENABLED);
     }
 
-    public async Task PutTarget(TopicId topic, SnsArn snsArn, CancellationToken ctx)
+    public async Task PutTarget(TopicId topic, SnsArn snsArn, CancellationToken ct)
     {
         logger.LogInformation("Putting EventBridge SNS target {TopicTopicName}[{SnsArnValue}]", topic.TopicName, snsArn.Value);
 
         var ruleTargets = await eventBridge.ListTargetsByRuleAsync(new()
         {
             Rule = topic.TopicName,
-        }, ctx);
+        }, ct);
 
         if (ruleTargets.Targets.Exists(x => x.Arn == snsArn.Value))
         {
@@ -87,12 +87,12 @@ sealed class AwsEvents : IProduceDriver
                             InputPath = "$.detail",
                         },
                     },
-                }, ctx);
+                }, ct);
 
         logger.LogInformation("Completed({ResultHttpStatusCode}): EventBridge SNS target {TopicTopicName}[{SnsArnValue}]", result.HttpStatusCode, topic.TopicName, snsArn.Value);
     }
 
-    public async Task<RuleArn> CreateRule(TopicId topicId, CancellationToken ctx)
+    public async Task<RuleArn> CreateRule(TopicId topicId, CancellationToken ct)
     {
         var eventPattern =
             $@"{{ ""detail-type"": [""{topicId.Event}""], ""detail"": {{ ""event"": [""{topicId.Event}""] }} }}";
@@ -113,7 +113,7 @@ sealed class AwsEvents : IProduceDriver
         };
 
         logger.LogInformation("Creating EventBridge rule: {TopicIdTopicName}", topicId.TopicName);
-        var response = await eventBridge.PutRuleAsync(request, ctx).ConfigureAwait(false);
+        var response = await eventBridge.PutRuleAsync(request, ct).ConfigureAwait(false);
         logger.LogDebug("Event Create/Update Response is: {Response}",
             response.HttpStatusCode);
 
@@ -121,7 +121,7 @@ sealed class AwsEvents : IProduceDriver
     }
 
     public async Task<PublishResult> Produce(TopicId topic, string message, Guid? correlationId,
-        CancellationToken ctx)
+        CancellationToken ct)
     {
         var messageId = NewId.NextGuid();
 
@@ -152,7 +152,7 @@ sealed class AwsEvents : IProduceDriver
                 },
             },
         };
-        var response = await eventBridge.PutEventsAsync(request, ctx);
+        var response = await eventBridge.PutEventsAsync(request, ct);
 
         if (response.FailedEntryCount > 0)
             throw new PorterException(string.Join(",",
