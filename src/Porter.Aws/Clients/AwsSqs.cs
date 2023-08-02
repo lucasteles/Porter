@@ -101,10 +101,10 @@ sealed class AwsSqs : IConsumeDriver
 
         var responseQueues =
             await sqs.ListQueuesAsync(new ListQueuesRequest
-                {
-                    QueueNamePrefix = queue,
-                    MaxResults = 1000,
-                }, ct)
+            {
+                QueueNamePrefix = queue,
+                MaxResults = 1000,
+            }, ct)
                 .ConfigureAwait(false);
 
         var url = responseQueues.QueueUrls.Find(name => name.Contains(queue));
