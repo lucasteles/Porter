@@ -13,7 +13,7 @@
     <PackageReference Include="AWSSDK.SQS" Version="3.7.200.7" />
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.101.88" />
     <PackageReference Include="CorrelationId" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.11" />
     <PackageReference Include="NewId" Version="4.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.2" />
